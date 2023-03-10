@@ -8,8 +8,9 @@ module.exports.addMessege = async (req,res,next)=>{
             users : [from,to],
             sender : from
         });
-        if(data)
-            return res.json({msg: "Messege added successfully"})
+        if(data){
+            console.log("Messege sent successfully");
+            return res.json({msg: "Messege added successfully"})}
         else
             return res.json({msg: "Failed to add messege to the database"})
     }
