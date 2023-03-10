@@ -25,7 +25,7 @@ mongoose.connect(process.env.MONGO_CLOUD_URL,{
 });
 
 app.get('/',(req,res)=>{
-    res.send("This is the Home Page !!!");
+    res.send("This is the Home Page !");
     res.end();
 })
 
