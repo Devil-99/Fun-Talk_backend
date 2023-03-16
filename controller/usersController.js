@@ -50,3 +50,21 @@ module.exports.getAllUsers = async (req,res,next)=>{
         next(exception);
     }
 };
+
+module.exports.updateUsernameMiddleware  = async(req,res,next)=>{
+    try{
+        const {currUser,newUsername} = req.body;
+        // console.log(currUser);
+        const user = await User.findByIdAndUpdate({_id: currUser._id},{
+            $set:{
+                username : newUsername
+            }
+        },{
+            new:true
+        });
+        return res.json({status:true , user});
+    }
+    catch(exception){
+        next(exception);
+    }
+}
