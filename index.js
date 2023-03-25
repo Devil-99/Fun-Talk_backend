@@ -41,12 +41,22 @@ const io = socket(server,{
 });
 
 global.onlineUsers = new Map();
+global.online = new Map();
 
 io.on('connection',(socket)=>{
     global.chatSocket = socket;
 
     socket.on('add-user',(userId)=>{
         onlineUsers.set(userId,socket.id);
+        online.set(socket.id,userId);
+    });
+
+    socket.on('online',(userID)=>{
+        const isOnline = onlineUsers.has(userID);
+        if(isOnline)
+            socket.emit('isOnline',true);
+        else
+            socket.emit('isOnline',false);
     });
 
     socket.on('send-msg',(data)=>{
@@ -61,5 +71,11 @@ io.on('connection',(socket)=>{
         if(sendUserSocket){
             socket.to(sendUserSocket).emit('msg-deleted');
         }
+    });
+
+    socket.on('disconnect',()=>{
+        const offlineUserId = online.get(socket.id);
+        onlineUsers.delete(offlineUserId);
+        online.delete(socket.id);
     });
 });
