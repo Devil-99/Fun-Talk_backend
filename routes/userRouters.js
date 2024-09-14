@@ -3,8 +3,6 @@ const { registerMiddleware, loginMiddleware, getAllUsers, updateUsernameMiddlewa
 
 const router = express.Router();
 
-router.post('/register',registerMiddleware);
-router.post('/login',loginMiddleware);
 router.post('/updateUsername',updateUsernameMiddleware);
 
 router.get('/allUsers/:id',getAllUsers);
