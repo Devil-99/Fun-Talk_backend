@@ -1,59 +1,43 @@
-const messegeModel = require("../model/messegeModel");
+const pool = require('../db');
+const { v4: uuidv4 } = require('uuid');
 
-module.exports.addMessege = async (req,res,next)=>{
-    try{
-        const {from , to , messege} = req.body;
-        const data = await messegeModel.create({
-            messege: {text: messege},
-            users : [from,to],
-            sender : from
-        });
-        if(data)
-            return res.json({msg: "Messege added successfully"})
-        else
-            return res.json({msg: "Failed to add messege to the database"})
-    }
-    catch(exc){
-        next(exc);
-    }
-};
-
-module.exports.getAllMessege = async (req,res,next)=>{
-    try{
-        const {from,to} = req.body;
-        const messeges =await messegeModel.find({
-            users:{
-                $all: [from, to],
-            },
-        }).sort({updatedAt:1});
-        const projectedMesseges = messeges.map((msg)=>{
-            return {
-                fromSelf: msg.sender.toString() === from,
-                messege: msg.messege.text,
-                messegeId: msg._id,
-                date: msg.createdAt
-            };
-        });
-        res.json(projectedMesseges);
-    }catch(exc){
-        next(exc);
-    }
-};
-
-module.exports.deleteMessege = async (req,res,next)=>{
-    try{
-        const {msgID} = req.body;
-        const deletedMsg= await messegeModel.deleteOne({
-            _id:msgID
-        });
-        if(deletedMsg){
-            return res.json({msg: "Messege deleted successfully"})
+const getMessages = async () => {
+    try {
+        const result = await pool.query('SELECT * FROM messages');
+        return {
+            status: 200,
+            data: result.rows
         }
-        else{
-            return res.json({msg: "Failed to delete messege to the database"})
-        }
-    }
-    catch(exc){
-        next(exc);
+    } catch (exception) {
+        return {
+            status: 500,
+            data: { message: 'Error in Login' }
+        };
     }
 };
+
+const sendMessage = async ({from, to, message}) => {
+    const message_id = uuidv4();
+    const timestamp = new Date().toISOString();
+    try {
+        const result = await pool.query(`
+        INSERT INTO messages (message_id, sender_id, receiver_id, message, timestamp) VALUES ($1, $2, $3, $4, $5)
+        returning *;
+        `,[message_id, from, to, message, timestamp]);
+        console.log(result.rows);
+        return {
+            status: 200,
+            data: result.rows
+        }
+    } catch (error) {
+        return {
+            status: 500,
+            data: { message: 'Error in Message Sending' }
+        };
+    }
+}
+
+module.exports = {
+    getMessages,
+    sendMessage
+}

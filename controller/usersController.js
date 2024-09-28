@@ -1,70 +1,47 @@
-const User = require("../model/userModel");
+const pool = require('../db');
 
-module.exports.registerMiddleware = async (req,res,next)=>{
-    try{
-        const {username, email, password} = req.body;
-        const usernameCheck = await User.findOne({username});
-        if(usernameCheck)
-            return res.json({msg:"Username is already used", status: false});
-        const emailCheck = await User.findOne({email});
-        if(emailCheck)
-            return res.json({msg:"Email is already used", status: false});
-
-        const user = await User.create({username,email,password});
-        return res.json({status:true , user});
-    }
-    catch(exception){
-        next(exception);
-    }
-};
-
-
-module.exports.loginMiddleware = async (req,res,next)=>{
-    try{
-        const {username, password} = req.body;
-        const user = await User.findOne({username});
-        if(!user)
-            return res.json({msg:"Incorrect Username", status: false});
-
-        const isPasswordValid = (password === user.password);
-        if(!isPasswordValid)
-            return res.json({msg:"Incorrect Password", status: false});
-
-        return res.json({status:true , user});
-    }
-    catch(exception){
-        next(exception);
-    }
-};
-
-
-module.exports.getAllUsers = async (req,res,next)=>{
-    try{
-        const allusers = await User.find({ _id: {$ne: req.params.id} }).select([
-            "email",
-            "username",
-            "_id"
-        ]);
-        return res.json(allusers);
-    }catch(exception){
-        next(exception);
-    }
-};
-
-module.exports.updateUsernameMiddleware  = async(req,res,next)=>{
-    try{
-        const {currUser,newUsername} = req.body;
-        // console.log(currUser);
-        const user = await User.findByIdAndUpdate({_id: currUser._id},{
-            $set:{
-                username : newUsername
+const getUsers = async ({user_id}) => {
+    try {
+        const result = await pool.query('SELECT user_id, username FROM users WHERE user_id != $1',[user_id]);
+        if (result.rows.length > 0) {
+            return {
+                status: 200,
+                data: result.rows
             }
-        },{
-            new:true
-        });
-        return res.json({status:true , user});
+        } else {
+            return {
+                status: 404,
+                data: { message: 'No Users Found!' }
+            };
+        }
+        return res.json(response.rows);
+    } catch (exception) {
+        console.error('Error in login:', error);
+        return {
+            status: 500,
+            data: { message: 'Internal Server Error' }
+        };
     }
-    catch(exception){
+};
+
+const updateUsername = async (req, res, next) => {
+    try {
+        const { currUser, newUsername } = req.body;
+        const user = await User.findByIdAndUpdate({ _id: currUser._id }, {
+            $set: {
+                username: newUsername
+            }
+        }, {
+            new: true
+        });
+        return res.json({ status: true, user });
+    }
+    catch (exception) {
         next(exception);
     }
+}
+
+module.exports = {
+    getUsers,
+    updateUsername
 }

@@ -37,7 +37,6 @@ const handleLogin = async (body) => {
         }
     } catch (error) {
         console.error('Error in login:', error);
-        // Return error status and message
         return {
             status: 500,
             data: { message: 'Internal server error' }

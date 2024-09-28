@@ -1,10 +1,14 @@
 const express = require('express');
-const { registerMiddleware, loginMiddleware, getAllUsers, updateUsernameMiddleware } = require('../controller/usersController');
-
 const router = express.Router();
+const { getUsers, updateUsername } = require('../controller/usersController');
 
-router.post('/updateUsername',updateUsernameMiddleware);
-
-router.get('/allUsers/:id',getAllUsers);
+router.get('/users', async (req, res) => {
+    try {
+        const response = await getUsers(req.query);
+        res.status(response.status).json(response.data);
+    } catch (error) {
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
 
 module.exports=router;
