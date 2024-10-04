@@ -24,7 +24,6 @@ const sendMessage = async ({from, to, message}) => {
         INSERT INTO messages (message_id, sender_id, receiver_id, message, timestamp) VALUES ($1, $2, $3, $4, $5)
         returning *;
         `,[message_id, from, to, message, timestamp]);
-        console.log(result.rows);
         return {
             status: 200,
             data: result.rows
@@ -37,7 +36,25 @@ const sendMessage = async ({from, to, message}) => {
     }
 }
 
+const deleteMessage = async ({message_id}) => {
+    try {
+        const result = await pool.query(`
+        DELETE FROM messages WHERE message_id = $1
+        `,[message_id]);
+        return {
+            status: 200,
+            data: { message: 'Message deleted successfully' }
+        };
+    } catch (error) {
+        return {
+            status: 500,
+            data: { message: 'Error in Message Deleting' }
+        };
+    }
+}
+
 module.exports = {
     getMessages,
-    sendMessage
+    sendMessage,
+    deleteMessage
 }

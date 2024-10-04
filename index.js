@@ -1,4 +1,5 @@
 const express = require('express');
+const http = require('http');
 const userRoutes = require('./routes/userRouters');
 const messegeRouter = require('./routes/messegesRoute');
 const authRoutes = require('./routes/authRoutes');
@@ -29,16 +30,40 @@ app.get('/', (req, res) => {
     res.end();
 })
 
-const server = app.listen(PORT, () => {
-    console.log("Server started on Port-", PORT);
+// Create HTTP server using the Express app
+const server = http.createServer(app);  
+
+// Setup Socket.IO with the HTTP server
+const io = socket(server, {
+    cors: {
+        origin: process.env.LOCAL_ORIGIN, // Allow connections from your frontend
+        methods: ["GET", "POST"]
+    }
 });
 
-// const io = socket(server, {
-//     cors: {
-//         origin: process.env.ORIGIN,
-//         credentials: true,
-//     },
-// });
+// Setup the connection event
+io.on('connection', (socket) => {
+    console.log('A user connected:', socket.id);
+    
+    // Handle receiving a message from the client
+    socket.on('message', (message) => {        
+        // Emit message back to the client
+        io.emit('message', message); // Broadcast to all connected clients
+    });
+
+    socket.on('delete',()=>{
+        io.emit('deleted');
+    });
+    
+    // Handle user disconnect
+    socket.on('disconnect', () => {
+        console.log('A user disconnected:', socket.id);
+    });
+});
+
+server.listen(PORT, () => {
+    console.log("Server is listening on Port-", PORT);
+});
 
 // global.onlineUsers = new Map();
 // global.online = new Map();
