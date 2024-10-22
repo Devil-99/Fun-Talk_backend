@@ -4,7 +4,7 @@ const { getMessages, sendMessage, deleteMessage } = require('../controller/messe
 
 router.get('/messages', async (req, res) => {
     try {
-        const response = await getMessages();
+        const response = await getMessages(req.query);
         res.status(response.status).json(response.data);
     } catch (error) {
         res.status(500).json({ message: 'Internal server error' });

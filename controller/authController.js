@@ -17,8 +17,9 @@ const handleLogin = async (body) => {
                     status: 200,
                     data: {
                         user_id: user.user_id,
-                        username: user.name,
-                        user_mail: user.mail
+                        username: user.username,
+                        user_mail: user.mail,
+                        creation_date: user.creation_date
                     }
                 };
             } else {
@@ -67,7 +68,7 @@ const handleRegister = async (body) => {
         const userId = uuidv4();
 
         await pool.query(
-            'INSERT INTO users (user_id, name, mail, password) VALUES ($1, $2, $3, $4);',
+            'INSERT INTO users (user_id, username, mail, password, creation_date) VALUES ($1, $2, $3, $4, NOW());',
             [userId, username, email, hashedPassword]
         );
 
@@ -76,6 +77,7 @@ const handleRegister = async (body) => {
             data: { message: 'Registration successful' }
         };
     } catch (error) {
+        console.log(error);
         return {
             status: 500,
             data: { message: 'Internal server error' }

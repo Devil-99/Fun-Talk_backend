@@ -1,9 +1,10 @@
 const pool = require('../db');
 const { v4: uuidv4 } = require('uuid');
 
-const getMessages = async () => {
+const getMessages = async (params) => {
+    const {sender_id, receiver_id} = params;
     try {
-        const result = await pool.query('SELECT * FROM messages');
+        const result = await pool.query('SELECT * FROM messages WHERE (sender_id = $1 AND receiver_id = $2) OR (sender_id = $2 AND receiver_id = $1)', [sender_id, receiver_id]);
         return {
             status: 200,
             data: result.rows
