@@ -1,6 +1,7 @@
 const pool = require('../db');
 const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcryptjs');
+const fs = require('fs');
 
 const handleLogin = async (body) => {
     try {
@@ -19,7 +20,8 @@ const handleLogin = async (body) => {
                         user_id: user.user_id,
                         username: user.username,
                         user_mail: user.mail,
-                        creation_date: user.creation_date
+                        creation_date: user.creation_date,
+                        dp: user.dp && `data:image/png;base64,${user.dp.toString('base64')}`
                     }
                 };
             } else {
@@ -66,10 +68,11 @@ const handleRegister = async (body) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const userId = uuidv4();
+        const date = new Date();
 
         await pool.query(
-            'INSERT INTO users (user_id, username, mail, password, creation_date) VALUES ($1, $2, $3, $4, NOW());',
-            [userId, username, email, hashedPassword]
+            'INSERT INTO users (user_id, username, mail, password, creation_date) VALUES ($1, $2, $3, $4, $5);',
+            [userId, username, email, hashedPassword, date]
         );
 
         return {
@@ -85,7 +88,43 @@ const handleRegister = async (body) => {
     }
 }
 
+const handleDP = async (file,body)=>{    
+    try {
+        if (!file) {
+            return { status: 400, data: { message: 'No image file provided' } };
+        }
+
+        // Read the uploaded file into a buffer
+        const imageBuffer = fs.readFileSync(file.path);        
+
+        // Save image to PostgreSQL (assuming a table named `user_profiles` exists)
+        const result = await pool.query(
+            `UPDATE users SET dp = $1 WHERE user_id = $2 returning dp`,
+            [imageBuffer, body.user_id]
+        );
+        
+        // Remove the temporary file from the uploads folder
+        fs.unlinkSync(file.path);
+
+        if (result.rowCount === 0) {
+            return { status: 404, data: { message: 'User not found' } };
+        }
+
+        return { 
+            status: 200,
+            data: { 
+                message: 'Profile picture updated',
+                image: `data:image/png;base64,${result.rows[0].dp.toString('base64')}` // Convert buffer to Base64
+            } 
+        };
+    } catch (error) {
+        console.error('Error in handleDP:', error);
+        throw error;
+    }
+}
+
 module.exports = {
     handleLogin,
-    handleRegister
+    handleRegister,
+    handleDP
 }
