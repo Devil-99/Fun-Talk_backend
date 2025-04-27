@@ -21,6 +21,7 @@ const handleLogin = async (body) => {
                         username: user.username,
                         user_mail: user.mail,
                         creation_date: user.creation_date,
+                        city: user.city,
                         dp: user.dp && `data:image/png;base64,${user.dp.toString('base64')}`
                     }
                 };
@@ -49,7 +50,7 @@ const handleLogin = async (body) => {
 
 const handleRegister = async (body) => {
     try {
-        const { username, email, password } = body;
+        const { username, email, password, city } = body;
 
         try {
             let existingUser = await pool.query('SELECT * FROM users WHERE mail = $1;', [email]);
@@ -71,8 +72,8 @@ const handleRegister = async (body) => {
         const date = new Date();
 
         await pool.query(
-            'INSERT INTO users (user_id, username, mail, password, creation_date) VALUES ($1, $2, $3, $4, $5);',
-            [userId, username, email, hashedPassword, date]
+            'INSERT INTO users (user_id, username, mail, password, creation_date, city) VALUES ($1, $2, $3, $4, $5, $6);',
+            [userId, username, email, hashedPassword, date, city]
         );
 
         return {
