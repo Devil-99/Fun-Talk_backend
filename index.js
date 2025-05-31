@@ -54,6 +54,16 @@ io.on('connection', (socket) => {
     socket.on('delete',()=>{
         io.emit('deleted');
     });
+
+    socket.on('login', (user) => {
+        // Broadcast the user login event to all clients
+        io.emit('login', user);
+    });
+
+    socket.on('logout', (user) => {
+        // Broadcast the user logout event to all clients
+        io.emit('logout', user);
+    });
     
     // Handle user disconnect
     socket.on('disconnect', () => {

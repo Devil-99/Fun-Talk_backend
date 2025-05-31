@@ -14,6 +14,16 @@ const handleLogin = async (body) => {
 
             if (passwordMatch) {
                 // Return user details upon successful login
+                const updateStatus = await pool.query(
+                    'UPDATE users SET is_active = true WHERE user_id = $1;',
+                    [user.user_id]
+                );
+                if (updateStatus.rowCount === 0) {
+                    return {
+                        status: 500,
+                        data: { message: 'Failed to Log in successfully' }
+                    };
+                }
                 return {
                     status: 200,
                     data: {
@@ -22,7 +32,8 @@ const handleLogin = async (body) => {
                         user_mail: user.mail,
                         creation_date: user.creation_date,
                         city: user.city,
-                        dp: user.dp && `data:image/png;base64,${user.dp.toString('base64')}`
+                        dp: user.dp && `data:image/png;base64,${user.dp.toString('base64')}`,
+                        online: true 
                     }
                 };
             } else {
@@ -124,8 +135,36 @@ const handleDP = async (file,body)=>{
     }
 }
 
+const handleLogout = async ({userId}) => {
+    try {
+        const result = await pool.query(
+            'UPDATE users SET is_active = false WHERE user_id = $1;',
+            [userId]
+        );
+
+        if (result.rowCount === 0) {
+            return {
+                status: 404,
+                data: { message: 'User not found' }
+            };
+        }
+
+        return {
+            status: 200,
+            data: { message: 'Logged out successfully' }
+        };
+    } catch (error) {
+        console.error('Error in logout:', error);
+        return {
+            status: 500,
+            data: { message: 'Internal server error' }
+        };
+    }
+}
+
 module.exports = {
     handleLogin,
+    handleLogout,
     handleRegister,
     handleDP
 }

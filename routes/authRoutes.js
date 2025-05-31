@@ -32,4 +32,13 @@ router.post('/dp', upload.single('image'), async(req,res) => {
     }
 })
 
+router.post('/logout', async (req, res) => {
+    try {
+        const response = await auth_controller.handleLogout(req.body);
+        res.status(response.status).json(response.data);
+    } catch (error) {
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
 module.exports = router;
