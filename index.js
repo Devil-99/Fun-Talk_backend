@@ -11,8 +11,16 @@ require("dotenv").config(); // this is use to configure the environment variable
 const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json()); // This has been used por parsing json string passed in POST method
+const allowedOrigins = [
+    'http://localhost:3000',
+    'https://fun-talk.netlify.app'
+];
+
 app.use(function (req, res, next) {
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
     res.setHeader(
         'Access-Control-Allow-Headers',
@@ -20,6 +28,7 @@ app.use(function (req, res, next) {
     );
     next();
 });
+
 
 app.use('/api', userRoutes);
 app.use('/api', authRoutes);
