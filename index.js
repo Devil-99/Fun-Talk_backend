@@ -63,8 +63,8 @@ io.on('connection', (socket) => {
         io.emit('message', message); // Broadcast to all connected clients
     });
 
-    socket.on('delete', () => {
-        io.emit('deleted');
+    socket.on('delete-message', (msg) => {
+        io.emit('deleted',msg);
     });
 
     socket.on('login', (user) => {
