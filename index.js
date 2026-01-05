@@ -8,7 +8,7 @@ const cors = require('cors');
 
 const app = express();
 require("dotenv").config(); // this is use to configure the environment variable here.
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8000;
 app.use(cors());
 app.use(express.json()); // This has been used por parsing json string passed in POST method
 const allowedOrigins = [
